@@ -6,7 +6,7 @@ dotenv.config();
 let port = process.env.PORT || 9870;
 let mongo = require('mongodb');
 let MongoClient = mongo.MongoClient;
-let mongoUrl = process.env.MongoLiveURL;
+let mongoUrl = "mongodb+srv://shoppinghub:shoppinghub123@cluster0.w4byv.mongodb.net/?retryWrites=true&w=majority";
 let db;
 
 app.use(morgan('common'))
