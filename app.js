@@ -5,11 +5,16 @@ let dotenv = require('dotenv');
 dotenv.config();
 let port = process.env.PORT || 9870;
 let mongo = require('mongodb');
+let cors = require('cors');
 let MongoClient = mongo.MongoClient;
+let bodyParser = require('body-parser');
 let mongoUrl = "mongodb+srv://shoppinghub:shoppinghub123@cluster0.w4byv.mongodb.net/?retryWrites=true&w=majority";
 let db;
 
-app.use(morgan('common'))
+app.use(morgan('common'));
+app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.json());
+app.use(cors());
 app.get('/',(req,res)=>{
     res.send("Response from ShoppingHub");
 
@@ -112,6 +117,62 @@ app.get('/details/:id',(req,res)=>{
         res.send(result);
     })
 })
+
+app.post('/productItem',(req,res) => {
+    if(Array.isArray(req.body.id)){
+        db.collection('product').find({product_id:{$in:req.body.id}}).toArray((err,result)=>{
+            if(err) throw err;
+             res.send(result); 
+        })
+    }else{
+        res.send("Invalid input");  
+    }
+})
+
+app.post('/placeOrder',(req,res)=>{
+    db.collection('orders').insert(req.body, (err,result)=>{
+        if(err) throw err;
+        res.send('Order Placed');
+    })
+})
+
+app.get('/orderList',(req,res)=>{
+    let email = req.query.email;
+    let query = {}
+    if(email){
+        query = {email:email}
+    }
+    db.collection('orders').find(query).toArray((err,result)=>{
+        if(err) throw err;
+        res.send(result);
+    })
+})
+
+app.put('/updateOrder/:id',(req,res)=>{
+     let id = Number(req.params.id);
+     db.collection('orders').updateOne(
+        {order_id:id},
+         {
+            $set:{
+                "status":req.body.status,
+                "bank_name":req.body.bank_name,
+                "date":req.body.date
+            }
+         },(err,result)=>{
+            if(err) throw err;
+            res.send("Order Updated");
+         }
+     )
+})
+
+app.delete('/deleteOrder/:id',(req,res) => {
+    let id =  Number(req.params.id)
+    db.collection('orders').remove({order_id:id},(err,result) => {
+      if(err) throw err;
+      res.send('Order Deleted')
+    })
+})
+
 
 MongoClient.connect(mongoUrl, (err,client)=> {
      if(err){console.log("Error While Connecting")}
