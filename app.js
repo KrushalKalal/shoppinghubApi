@@ -173,6 +173,13 @@ app.delete('/deleteOrder/:id',(req,res) => {
     })
 })
 
+app.get('/genderList',(req,res)=>{
+    db.collection('gender').find().toArray((err,result)=>{
+        if(err) throw err;
+        res.send(result);
+    })
+})
+
 
 MongoClient.connect(mongoUrl, (err,client)=> {
      if(err){console.log("Error While Connecting")}
